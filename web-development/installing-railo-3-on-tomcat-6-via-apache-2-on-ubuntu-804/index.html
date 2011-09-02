@@ -1,0 +1,139 @@
+<h1>Installing Railo 3 on Tomcat 6 via Apache 2 on Ubuntu 8.04</h1> 
+
+<p>Well that headline is a bit of a mouthful, but i figured if this was something I was attempting to do then there was a good chance that others were attempting the same thing &#8211; and what I really could have done with is a guide.  So here&#8217;s that guide.</p> 
+<p>First of all I started with a default install of <a href="http://www.ubuntu.com/" onclick="javascript:pageTracker._trackPageview('/outbound/article/www.ubuntu.com');">Ubuntu</a> Server 8.04, the latest LTS release.  There&#8217;s no reason why this shouldn&#8217;t work on 8.10 though.</p> 
+<h3>Setting Up Tomcat 6</h3> 
+<p>First things first, install <a href="http://java.sun.com/" onclick="javascript:pageTracker._trackPageview('/outbound/article/java.sun.com');">Java</a>.</p> 
+<blockquote> 
+<pre>sudo apt-get install sun-java6-jdk</pre> 
+</blockquote> 
+<p>That should all without a hitch and the next step is to get <a href="http://tomcat.apache.org/" onclick="javascript:pageTracker._trackPageview('/outbound/article/tomcat.apache.org');">Tomcat</a> installed.  The version available through is apt is version 5.5 and I wanted to use the latest release so after logging in to the server download the latest (6.0.18 at this time) by executing</p> 
+<blockquote> 
+<pre>wget http://apache.hoxt.com/tomcat/tomcat-6/v6.0.18/bin/apache-tomcat-6.0.18.tar.gz
+tar xvzf apache-tomcat-6.0.18.tar.gz</pre> 
+</blockquote> 
+<p>Next we need to move Tomcat somewhere permanent.</p> 
+<blockquote> 
+<pre>sudo mv apache-tomcat-6.0.18 /usr/local/tomcat</pre> 
+</blockquote> 
+<p>The next thing to do is set Tomcat to automatically start when the server starts (plus the script makes it easier to start and stop Tomcat). Start up your editor of choice.</p> 
+<blockquote> 
+<pre>sudo nano /etc/init.d/tomcat</pre> 
+</blockquote> 
+<p>And paste in the following script (which I got originally from <a href="http://www.howtogeek.com/howto/linux/installing-tomcat-6-on-ubuntu/" onclick="javascript:pageTracker._trackPageview('/outbound/article/www.howtogeek.com');" target="_blank">HowToGeek.com)</a></p> 
+<blockquote> 
+<pre># Tomcat auto-start
+#
+# description: Auto-starts tomcat
+# processname: tomcat
+# pidfile: /var/run/tomcat.pid
+ 
+export JAVA_HOME=/usr/lib/jvm/java-6-sun
+ 
+case $1 in
+start)
+        sh /usr/local/tomcat/bin/startup.sh
+        ;; 
+stop)   
+        sh /usr/local/tomcat/bin/shutdown.sh
+        ;; 
+restart)
+        sh /usr/local/tomcat/bin/shutdown.sh
+        sh /usr/local/tomcat/bin/startup.sh
+        ;; 
+esac    
+exit 0</pre> 
+</blockquote> 
+<p>The script also need to be made executable and hooked up to the startup folders.</p> 
+<blockquote> 
+<pre>sudo chmod 755 /etc/init.d/tomcat
+sudo nano /etc/init.d/tomcat
+sudo ln -s /etc/init.d/tomcat /etc/rc1.d/K99tomcat
+sudo ln -s /etc/init.d/tomcat /etc/rc2.d/S99tomcat</pre> 
+</blockquote> 
+<p>Tomcat should now be up and running!</p> 
+<h3>Railo</h3> 
+<p>To install <a href="http://www.railo-technologies.com" onclick="javascript:pageTracker._trackPageview('/outbound/article/www.railo-technologies.com');">Railo</a> we first need to get the <a href="http://www.railo-technologies.com/en/index.cfm?treeID=224" onclick="javascript:pageTracker._trackPageview('/outbound/article/www.railo-technologies.com');">Railo custom version</a> and copy all of the files into the Tomcat lib directory.</p> 
+<blockquote> 
+<pre>wget http://www.railo-technologies.com/railo/remote/download/3.0.1.000/custom/all/railo-3.0.1.000-jars.tar.gz</pre> 
+<pre>tar zxvf railo-3.0.1.000-jars.tar.gz</pre> 
+<pre>sudo mv railo-3.0.1.000-jars/* /usr/local/tomcat/lib</pre> 
+</blockquote> 
+<p>The next step is to get Railo and Tomcat working together.  I&#8217;ve assumed that you&#8217;re only using Tomcat for CFML processing so these instructions only cover installing Railo on a server wide basis rather than being site specific.</p> 
+<p>Open up the web config file</p> 
+<blockquote> 
+<pre>sudo nano /usr/local/tomcat/conf/web.xml</pre> 
+</blockquote> 
+<p>and append the following inside the &lt;web-app&gt; element.</p> 
+<blockquote> 
+<pre>&lt;servlet&gt;
+&lt;servlet-name&gt;CFMLServlet&lt;/servlet-name&gt;
+&lt;servlet-class&gt;railo.loader.servlet.CFMLServlet&lt;/servlet-class&gt;
+   &lt;init-param&gt;
+      &lt;param-name&gt;configuration&lt;/param-name&gt;
+      &lt;param-value&gt;{web-root-directory}/WEB-INF/railo/&lt;/param-value&gt;
+      &lt;description&gt;Configuraton directory&lt;/description&gt;
+   &lt;/init-param&gt;
+   &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+   &lt;servlet-name&gt;CFMLServlet&lt;/servlet-name&gt;
+   &lt;url-pattern&gt;*.cfm&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+   &lt;servlet-name&gt;CFMLServlet&lt;/servlet-name&gt;
+   &lt;url-pattern&gt;*.cfml&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+   &lt;servlet-name&gt;CFMLServlet&lt;/servlet-name&gt;
+   &lt;url-pattern&gt;*.cfc&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre> 
+</blockquote> 
+<p>Inside the &lt;welcome-file-list&gt; element insert the following</p> 
+<blockquote> 
+<pre>&lt;welcome-file&gt;index.cfm&lt;/welcome-file&gt;
+&lt;welcome-file&gt;index.cfml&lt;/welcome-file&gt;</pre> 
+</blockquote> 
+<p>This tells Tomcat what files to process and what to do with them.</p> 
+<h3>Apache</h3> 
+<p>Next we need Apache.  Originally I had installed this by selecting the LAMP stack while installing Ubuntu but if you missed that step then go for</p> 
+<blockquote> 
+<pre>sudo apt-get install apache2</pre> 
+</blockquote> 
+<h3>Connecting Apache and Tomcat</h3> 
+<p>There are various ways to connect Apache and Tomcat, but we&#8217;ll be using mod_jk which you can install on Ubuntu by typing in </p> 
+<blockquote> 
+<pre>sudo apt-get install libapache2-mod-jk</pre> 
+</blockquote> 
+<p>To specify the connection between Apache and Tomcat we set up a file called workers.properties and list the different connectors.  Create the file in the Apache directory</p> 
+<blockquote> 
+<pre>sudo nano /etc/apache2/workers.properties</pre> 
+</blockquote> 
+<p>and paste in the following</p> 
+<blockquote> 
+<pre>worker.list=default
+ 
+worker.default.port=8009
+worker.default.host=localhost
+worker.default.type=ajp13
+worker.default.lbfactor=1</pre> 
+</blockquote> 
+<p>We then tell apache where this file is by adding the following to your /etc/apache2/httpd.conf</p> 
+<blockquote> 
+<pre># Mod_jk settings
+JkWorkersFile workers.properties
+DirectoryIndex index.html index.htm index.cfm index.cfml</pre> 
+</blockquote> 
+<h3>Setting Up A Site</h3> 
+<p>To use Railo on a website we need to configure it in both Apache and Tomcat.  In Tomcat&#8217;s server.xml (/usr/local/tomcat/conf/server.xml if you&#8217;re following my instructions) add the following (you can add many of these if you need to set it up for each application)</p> 
+<blockquote> 
+<pre>&lt;Host name="your.url.com" appBase="/var/www/vhosts/yoursite"&gt;
+    &lt;Context path="" docBase=""/&gt;
+&lt;/Host&gt;</pre> 
+</blockquote> 
+<p>Finally we add the following to your site&#8217;s apache vhost config (most likely in /etc/apache2/sites-available)</p> 
+<blockquote> 
+<pre>JkMount /*.cfm default</pre> 
+</blockquote> 
+<p>This tells mod_jk to use the default connector (as specified in the workers.properties file) whenever it encounters a file ending in .cfm.  By setting it up this way we can still use apache to server static files like images, css and js (or even run another language like php side by side with ColdFusion)</p> 
+<p>Last thing to do is to drop some Coldfusion into your website and check that everything is working.</p>
