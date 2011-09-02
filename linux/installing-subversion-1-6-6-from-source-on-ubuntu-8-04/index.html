@@ -1,0 +1,28 @@
+<h1>Installing Subversion 1.6.6 from source on Ubuntu 8.04</h1>
+<p>I&#8217;ve got a number of servers that are currently running the latest LTS release of <a href="http://www.ubuntu.com/" onclick="javascript:pageTracker._trackPageview('/outbound/article/www.ubuntu.com');">Ubuntu</a>, 8.04.  Unfortunately this release doesn&#8217;t have the latest version of <a href="http://subversion.tigris.org/" onclick="javascript:pageTracker._trackPageview('/outbound/article/subversion.tigris.org');">subversion</a> (1.6.6  at time of writing) available from apt and as the various clients that get used to access these working copies get updated, they stop working with the command line version on the server (1.5.1).</p> 
+<p>I found installing from source a bit fiddly at first but after some research managed to get everything hooked up as required.</p> 
+<p>Start off by grabbing the latest version from the subversion site and untar/gzipping it</p> 
+<blockquote><p>wget http://subversion.tigris.org/downloads/subversion-1.6.6.tar.gz<br /> 
+tar xf subversion-1.6.6.tar.gz</p></blockquote> 
+<p>There&#8217;s a few pre-requisites that need to be installed to compile subversion so if you&#8217;ve not already got them add these packages.</p> 
+<blockquote><p>sudo apt-get install libc6-dev g++ gcc<br /> 
+sudo apt-get install libapr1 libapr1-dev libaprutil1 libaprutil1-dev libneon27 libneon27-dev</p></blockquote> 
+<p>Configure the compilation from within the newly uncompressed directory and declare where you want the binaries to be saved to</p> 
+<blockquote><p>./configure &#8211;prefix=/usr/bin/subversion-1.6.6 &#8211;disable-nls</p></blockquote> 
+<p>And  finally run the make process</p> 
+<blockquote><p>make<br /> 
+sudo make install</p></blockquote> 
+<p>All being well you should have the latest version of subversion accessible from the directory you specified (in our case /usr/bin/subversion-1.6.6).  If you want this new version to precede the existing version so you don&#8217;t have to write in the full path each time.  Alter <em>/etc/environment </em>and add the path to the newly installed subversion to the start of the PATH variable. e.g.</p> 
+<blockquote><p>PATH=&#8221;/usr/bin/subversion-1.6.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games&#8221;</p></blockquote> 
+<p>Reload you environment file with</p> 
+<blockquote><p>source /etc/environment</p></blockquote> 
+<p>And type <em>svn &ndash;&ndash;version</em> to check that you do indeed have SVN 1.6.6 installed</p> 
+<blockquote><p> 
+svn, version 1.6.6 (r40053)<br /> 
+compiled Nov  3 2009, 12:19:16<br /> 
+Copyright (C) 2000-2009 CollabNet.<br /> 
+Subversion is open source software, see http://subversion.tigris.org/<br /> 
+This product includes software developed by CollabNet (http://www.Collab.Net/).<br /> 
+svn, version 1.6.6 (r40053)   compiled Nov  3 2009, 12:19:16<br /> 
+Copyright (C) 2000-2009 CollabNet.Subversion is open source software, see http://subversion.tigris.org/This product includes software developed by CollabNet (http://www.Collab.Net/).</p> 
+</blockquote>
