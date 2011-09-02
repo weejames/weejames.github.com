@@ -1,0 +1,8 @@
+---
+layout: default
+title: MongoDB Output Caching Library for CodeIgniter
+---
+<h1>MongoDB Output Caching Library for CodeIgniter</h1> 
+<p>Recently I&#8217;ve being experimenting with CodeIgniter&#8217;s built in <a href="http://codeigniter.com/user_guide/general/caching.html" onclick="javascript:pageTracker._trackPageview('/outbound/article/codeigniter.com');">web page caching</a> mechanism to speed up rendering on an application i&#8217;ve been building at work.  As an experiment I&#8217;ve overwritten the caching mechanism to cache to MongoDB rather than the file system.  I&#8217;m assuming this will be faster but haven&#8217;t had time to do proper analysis yet.  This post is really just to announce that the code is available over at <a href="http://github.com/weejames/MongoDB-Output-Cache-for-CodeIgniter" onclick="javascript:pageTracker._trackPageview('/outbound/article/github.com');">GitHub</a>.</p> 
+<p>The library overrides the existing cache handling but it syntactically compatible with the existing caching functions so you won&#8217;t need to alter your application code to use it.</p> 
+<p>Feel free to check it out and let me know your thoughts on it.  I&#8217;ll write an update soon once i&#8217;ve done some reasonable testing to compare metrics.</p>
